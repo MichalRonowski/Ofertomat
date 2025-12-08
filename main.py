@@ -641,7 +641,6 @@ class OfertomatApp:
             # Pole edycji nazwy
             name_field = ft.TextField(
                 value=item['name'],
-                width=400,
                 multiline=False,
                 data=i,
                 on_blur=lambda e: self.update_item_name(e.control.data, e.control.value)
@@ -677,11 +676,16 @@ class OfertomatApp:
             rows.append(
                 ft.DataRow(
                     cells=[
-                        ft.DataCell(ft.Text(item['category_name'], width=100)),
-                        ft.DataCell(name_field),
-                        ft.DataCell(ft.Text(f"{item['purchase_price_net']:.2f} zł", width=80)),
+                        ft.DataCell(ft.Text(item['category_name'])),
+                        ft.DataCell(
+                            ft.Container(
+                                content=name_field,
+                                width=350
+                            )
+                        ),
+                        ft.DataCell(ft.Text(f"{item['purchase_price_net']:.2f} zł")),
                         ft.DataCell(margin_field),
-                        ft.DataCell(ft.Text(f"{item['vat_rate']:.0f}%", width=50)),
+                        ft.DataCell(ft.Text(f"{item['vat_rate']:.0f}%")),
                         ft.DataCell(net_field),
                         ft.DataCell(gross_field),
                         ft.DataCell(
