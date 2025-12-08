@@ -29,23 +29,23 @@ class OfertomatApp:
             min_extended_width=200,
             destinations=[
                 ft.NavigationRailDestination(
-                    icon=ft.icons.CATEGORY_OUTLINED,
-                    selected_icon=ft.icons.CATEGORY,
+                    icon="category_outlined",
+                    selected_icon="category",
                     label="Kategorie"
                 ),
                 ft.NavigationRailDestination(
-                    icon=ft.icons.INVENTORY_OUTLINED,
-                    selected_icon=ft.icons.INVENTORY,
+                    icon="inventory_outlined",
+                    selected_icon="inventory",
                     label="Produkty"
                 ),
                 ft.NavigationRailDestination(
-                    icon=ft.icons.UPLOAD_FILE_OUTLINED,
-                    selected_icon=ft.icons.UPLOAD_FILE,
+                    icon="upload_file_outlined",
+                    selected_icon="upload_file",
                     label="Import"
                 ),
                 ft.NavigationRailDestination(
-                    icon=ft.icons.DESCRIPTION_OUTLINED,
-                    selected_icon=ft.icons.DESCRIPTION,
+                    icon="description_outlined",
+                    selected_icon="description",
                     label="Nowa Oferta"
                 ),
             ],
@@ -95,14 +95,14 @@ class OfertomatApp:
                         ft.DataCell(
                             ft.Row([
                                 ft.IconButton(
-                                    icon=ft.icons.EDIT,
+                                    icon="edit",
                                     tooltip="Edytuj",
                                     on_click=lambda e, c=cat: self.edit_category(c)
                                 ),
                                 ft.IconButton(
-                                    icon=ft.icons.DELETE,
+                                    icon="delete",
                                     tooltip="Usuń",
-                                    icon_color=ft.colors.RED_400,
+                                    icon_color=ft.Colors.RED_400,
                                     on_click=lambda e, c=cat: self.delete_category(c)
                                 ),
                             ])
@@ -126,7 +126,7 @@ class OfertomatApp:
                     ft.Text("Zarządzanie kategoriami", size=24, weight=ft.FontWeight.BOLD),
                     ft.FilledButton(
                         "Dodaj kategorię",
-                        icon=ft.icons.ADD,
+                        icon="add",
                         on_click=self.add_category_dialog
                     ),
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
@@ -152,7 +152,7 @@ class OfertomatApp:
                     self.page.update()
                     self.show_categories_view()
                 else:
-                    self.show_snackbar("Kategoria o tej nazwie już istnieje!", ft.colors.RED_400)
+                    self.show_snackbar("Kategoria o tej nazwie już istnieje!", ft.Colors.RED_400)
         
         dialog = ft.AlertDialog(
             title=ft.Text("Dodaj kategorię"),
@@ -180,7 +180,7 @@ class OfertomatApp:
                     self.page.update()
                     self.show_categories_view()
                 else:
-                    self.show_snackbar("Kategoria o tej nazwie już istnieje!", ft.colors.RED_400)
+                    self.show_snackbar("Kategoria o tej nazwie już istnieje!", ft.Colors.RED_400)
         
         dialog = ft.AlertDialog(
             title=ft.Text("Edytuj kategorię"),
@@ -208,7 +208,7 @@ class OfertomatApp:
             content=ft.Text(f"Czy na pewno chcesz usunąć kategorię '{category['name']}'?"),
             actions=[
                 ft.TextButton("Anuluj", on_click=lambda e: self.close_dialog()),
-                ft.FilledButton("Usuń", on_click=confirm_delete, style=ft.ButtonStyle(bgcolor=ft.colors.RED_400)),
+                ft.FilledButton("Usuń", on_click=confirm_delete, style=ft.ButtonStyle(bgcolor=ft.Colors.RED_400)),
             ],
         )
         
@@ -222,7 +222,7 @@ class OfertomatApp:
         """Widok listy produktów"""
         search_field = ft.TextField(
             label="Szukaj produktu",
-            prefix_icon=ft.icons.SEARCH,
+            prefix_icon="search",
             on_change=self.search_products,
             expand=True
         )
@@ -238,7 +238,7 @@ class OfertomatApp:
                         search_field,
                         ft.FilledButton(
                             "Dodaj produkt",
-                            icon=ft.icons.ADD,
+                            icon="add",
                             on_click=self.add_product_dialog
                         ),
                     ]),
@@ -269,14 +269,14 @@ class OfertomatApp:
                         ft.DataCell(
                             ft.Row([
                                 ft.IconButton(
-                                    icon=ft.icons.EDIT,
+                                    icon="edit",
                                     tooltip="Edytuj",
                                     on_click=lambda e, p=prod: self.edit_product(p)
                                 ),
                                 ft.IconButton(
-                                    icon=ft.icons.DELETE,
+                                    icon="delete",
                                     tooltip="Usuń",
-                                    icon_color=ft.colors.RED_400,
+                                    icon_color=ft.Colors.RED_400,
                                     on_click=lambda e, p=prod: self.delete_product(p)
                                 ),
                             ])
@@ -338,7 +338,7 @@ class OfertomatApp:
                     self.page.update()
                     self.show_products_view()
                 else:
-                    self.show_snackbar("Produkt o tym kodzie już istnieje!", ft.colors.RED_400)
+                    self.show_snackbar("Produkt o tym kodzie już istnieje!", ft.Colors.RED_400)
         
         dialog = ft.AlertDialog(
             title=ft.Text("Dodaj produkt"),
@@ -388,7 +388,7 @@ class OfertomatApp:
                     self.page.update()
                     self.show_products_view()
                 else:
-                    self.show_snackbar("Produkt o tym kodzie już istnieje!", ft.colors.RED_400)
+                    self.show_snackbar("Produkt o tym kodzie już istnieje!", ft.Colors.RED_400)
         
         dialog = ft.AlertDialog(
             title=ft.Text("Edytuj produkt"),
@@ -418,7 +418,7 @@ class OfertomatApp:
             content=ft.Text(f"Czy na pewno chcesz usunąć produkt '{product['name']}'?"),
             actions=[
                 ft.TextButton("Anuluj", on_click=lambda e: self.close_dialog()),
-                ft.FilledButton("Usuń", on_click=confirm_delete, style=ft.ButtonStyle(bgcolor=ft.colors.RED_400)),
+                ft.FilledButton("Usuń", on_click=confirm_delete, style=ft.ButtonStyle(bgcolor=ft.Colors.RED_400)),
             ],
         )
         
@@ -460,7 +460,7 @@ class OfertomatApp:
                     self.import_category_dropdown,
                     ft.FilledButton(
                         "Wybierz plik do importu",
-                        icon=ft.icons.UPLOAD_FILE,
+                        icon="upload_file",
                         on_click=lambda e: self.import_file_picker.pick_files(
                             allowed_extensions=["csv", "xlsx", "xls"],
                             dialog_title="Wybierz plik do importu"
@@ -486,12 +486,12 @@ class OfertomatApp:
                 added, updated = self.db.import_products_batch(products)
                 
                 self.import_status.value = f"✓ Import zakończony! Dodano: {added}, Zaktualizowano: {updated}"
-                self.import_status.color = ft.colors.GREEN_400
-                self.show_snackbar(f"Import zakończony! Dodano: {added}, Zaktualizowano: {updated}", ft.colors.GREEN_400)
+                self.import_status.color = ft.Colors.GREEN_400
+                self.show_snackbar(f"Import zakończony! Dodano: {added}, Zaktualizowano: {updated}", ft.Colors.GREEN_400)
             except Exception as ex:
                 self.import_status.value = f"✗ Błąd importu: {str(ex)}"
-                self.import_status.color = ft.colors.RED_400
-                self.show_snackbar(f"Błąd importu: {str(ex)}", ft.colors.RED_400)
+                self.import_status.color = ft.Colors.RED_400
+                self.show_snackbar(f"Błąd importu: {str(ex)}", ft.Colors.RED_400)
             
             self.page.update()
     
@@ -523,7 +523,7 @@ class OfertomatApp:
                     category_selection,
                     ft.FilledButton(
                         "Załaduj produkty z wybranych kategorii",
-                        icon=ft.icons.ADD_SHOPPING_CART,
+                        icon="add_shopping_cart",
                         on_click=self.load_offer_products
                     ),
                     ft.Divider(),
@@ -539,7 +539,7 @@ class OfertomatApp:
         selected_categories = [cb.data for cb in self.offer_category_checkboxes if cb.value]
         
         if not selected_categories:
-            self.show_snackbar("Wybierz przynajmniej jedną kategorię!", ft.colors.ORANGE_400)
+            self.show_snackbar("Wybierz przynajmniej jedną kategorię!", ft.Colors.ORANGE_400)
             return
         
         self.offer_items = []
@@ -594,8 +594,8 @@ class OfertomatApp:
                         ft.DataCell(ft.Text(f"{gross_price:.2f} zł")),
                         ft.DataCell(
                             ft.IconButton(
-                                icon=ft.icons.DELETE,
-                                icon_color=ft.colors.RED_400,
+                                icon="delete",
+                                icon_color=ft.Colors.RED_400,
                                 tooltip="Usuń",
                                 on_click=lambda e, idx=i: self.remove_offer_item(idx)
                             )
@@ -624,7 +624,7 @@ class OfertomatApp:
             ft.Divider(),
             ft.FilledButton(
                 "Generuj PDF",
-                icon=ft.icons.PICTURE_AS_PDF,
+                icon="picture_as_pdf",
                 on_click=self.generate_offer_pdf
             ) if len(self.offer_items) > 0 else ft.Container(),
         ])
@@ -654,7 +654,7 @@ class OfertomatApp:
     def generate_offer_pdf(self, e):
         """Generuje PDF z oferty"""
         if not self.offer_items:
-            self.show_snackbar("Brak produktów w ofercie!", ft.colors.ORANGE_400)
+            self.show_snackbar("Brak produktów w ofercie!", ft.Colors.ORANGE_400)
             return
         
         # Przygotuj dane
@@ -673,12 +673,12 @@ class OfertomatApp:
         
         if success:
             abs_path = os.path.abspath(output_path)
-            self.show_snackbar(f"PDF wygenerowany: {abs_path}", ft.colors.GREEN_400)
+            self.show_snackbar(f"PDF wygenerowany: {abs_path}", ft.Colors.GREEN_400)
             
             # Otwórz folder z plikiem
             os.startfile(os.path.dirname(abs_path))
         else:
-            self.show_snackbar("Błąd generowania PDF!", ft.colors.RED_400)
+            self.show_snackbar("Błąd generowania PDF!", ft.Colors.RED_400)
     
     # === POMOCNICZE ===
     
