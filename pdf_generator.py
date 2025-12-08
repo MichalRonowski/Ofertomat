@@ -168,7 +168,7 @@ class PDFGenerator:
                 
                 # Tabela produktów
                 table_data = [
-                    ['Nazwa', 'Ilość', 'J.m.', 'Cena netto\njedn.', 'VAT', 'Cena brutto\njedn.', 'Wartość\nnetto', 'Wartość\nbrutto']
+                    ['Nazwa', 'Cena netto', 'J.M.', 'VAT', 'Cena brutto']
                 ]
                 
                 category_total_net = 0
@@ -190,28 +190,17 @@ class PDFGenerator:
                     
                     table_data.append([
                         name_para,
-                        f"{item['quantity']:.2f}",
-                        item.get('unit', 'szt.'),
-                        f"{prices['net_unit']:.2f} zł",
+                        f"{prices['net_unit']:.2f}",
+                        f"zł/{item.get('unit', 'szt.')}",
                         f"{item['vat_rate']:.0f}%",
-                        f"{prices['gross_unit']:.2f} zł",
-                        f"{prices['net_total']:.2f} zł",
-                        f"{prices['gross_total']:.2f} zł"
+                        f"{prices['gross_unit']:.2f} zł"
                     ])
-                
-                # Podsuma kategorii
-                table_data.append([
-                    f'Suma {category_name}', '', '', '', '', '',
-                    f"{category_total_net:.2f} zł",
-                    f"{category_total_gross:.2f} zł"
-                ])
                 
                 grand_total_net += category_total_net
                 grand_total_gross += category_total_gross
                 
                 # Stwórz tabelę - dostosowane szerokości kolumn
-                # Szersza kolumna Nazwa, węższe pozostałe
-                table = Table(table_data, colWidths=[7*cm, 1.2*cm, 1*cm, 2*cm, 1*cm, 2*cm, 2*cm, 2*cm])
+                table = Table(table_data, colWidths=[9*cm, 2.5*cm, 2*cm, 1.5*cm, 2.5*cm])
                 
                 # Stylizacja tabeli
                 table.setStyle(TableStyle([
@@ -224,20 +213,14 @@ class PDFGenerator:
                     ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
                     
                     # Dane
-                    ('FONTNAME', (0, 1), (-1, -2), self.font_name),
-                    ('FONTSIZE', (0, 1), (-1, -2), 8),
+                    ('FONTNAME', (0, 1), (-1, -1), self.font_name),
+                    ('FONTSIZE', (0, 1), (-1, -1), 8),
                     ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),
                     ('ALIGN', (0, 1), (0, -1), 'LEFT'),
                     ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                     
                     # Siatka
-                    ('GRID', (0, 0), (-1, -2), 0.5, colors.grey),
-                    ('LINEBELOW', (0, -1), (-1, -1), 1, colors.HexColor('#2c5aa0')),
-                    
-                    # Podsuma kategorii
-                    ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#e6f2ff')),
-                    ('FONTNAME', (0, -1), (-1, -1), self.font_bold),
-                    ('FONTSIZE', (0, -1), (-1, -1), 9),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
                     
                     # Padding
                     ('TOPPADDING', (0, 1), (-1, -1), 6),
@@ -247,25 +230,18 @@ class PDFGenerator:
                 elements.append(table)
                 elements.append(Spacer(1, 15))
             
-            # Suma końcowa
-            elements.append(Spacer(1, 10))
-            summary_data = [
-                ['SUMA CAŁKOWITA NETTO:', f"{grand_total_net:.2f} zł"],
-                ['SUMA CAŁKOWITA BRUTTO:', f"{grand_total_gross:.2f} zł"]
-            ]
-            
-            summary_table = Table(summary_data, colWidths=[14*cm, 4*cm])
-            summary_table.setStyle(TableStyle([
-                ('FONTNAME', (0, 0), (-1, -1), self.font_bold),
-                ('FONTSIZE', (0, 0), (-1, -1), 12),
-                ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
-                ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
-                ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#1a5490')),
-                ('LINEABOVE', (0, 0), (-1, 0), 2, colors.HexColor('#2c5aa0')),
-                ('TOPPADDING', (0, 0), (-1, -1), 10),
-            ]))
-            
-            elements.append(summary_table)
+            # Informacja o ważności oferty
+            elements.append(Spacer(1, 20))
+            validity_style = ParagraphStyle(
+                name='Validity',
+                parent=self.styles['Normal'],
+                fontSize=8,
+                fontName=self.font_name,
+                textColor=colors.grey,
+                alignment=TA_LEFT
+            )
+            validity_text = "<i>Oferta ważna w dniu przedstawienia do momentu zmiany cen rynkowych.</i>"
+            elements.append(Paragraph(validity_text, validity_style))
             
             # Zbuduj PDF
             doc.build(elements)
