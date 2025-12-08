@@ -43,7 +43,9 @@ class DOCXGenerator:
     def set_cell_background(self, cell, color):
         """Ustawia kolor tła komórki tabeli"""
         shading_elm = OxmlElement('w:shd')
-        shading_elm.set(qn('w:fill'), f"{color.rgb:06x}")
+        # Konwertuj RGBColor na hex string
+        hex_color = f"{color[0]:02X}{color[1]:02X}{color[2]:02X}"
+        shading_elm.set(qn('w:fill'), hex_color)
         cell._element.get_or_add_tcPr().append(shading_elm)
     
     def generate_offer_docx(self, offer_data: Dict, output_path: str) -> bool:
