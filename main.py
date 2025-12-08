@@ -2,6 +2,7 @@ import flet as ft
 from database import Database
 from importer import DataImporter
 from pdf_generator import PDFGenerator
+from docx_generator import DOCXGenerator
 from datetime import datetime
 import os
 
@@ -11,6 +12,7 @@ class OfertomatApp:
         self.db = Database()
         self.importer = DataImporter()
         self.pdf_gen = PDFGenerator()
+        self.docx_gen = DOCXGenerator()
         
         # Dane tymczasowe dla oferty
         self.offer_items = []
@@ -795,7 +797,7 @@ class OfertomatApp:
         self.refresh_offer_table()
     
     def generate_offer_pdf(self, e):
-        """Generuje PDF z oferty"""
+        """Generuje PDF i DOCX z oferty"""
         if not self.offer_items:
             self.show_snackbar("Brak produktów w ofercie!", ft.Colors.ORANGE_400)
             return
@@ -809,19 +811,25 @@ class OfertomatApp:
         
         # Generuj nazwę pliku
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        output_path = f"Oferta_{timestamp}.pdf"
+        pdf_path = f"Oferta_{timestamp}.pdf"
+        docx_path = f"Oferta_{timestamp}.docx"
         
-        # Generuj PDF
-        success = self.pdf_gen.generate_offer_pdf(offer_data, output_path)
+        # Generuj oba formaty
+        pdf_success = self.pdf_gen.generate_offer_pdf(offer_data, pdf_path)
+        docx_success = self.docx_gen.generate_offer_docx(offer_data, docx_path)
         
-        if success:
-            abs_path = os.path.abspath(output_path)
-            self.show_snackbar(f"PDF wygenerowany: {abs_path}", ft.Colors.GREEN_400)
+        if pdf_success and docx_success:
+            abs_path = os.path.abspath(pdf_path)
+            self.show_snackbar(f"Oferta wygenerowana: PDF i DOCX", ft.Colors.GREEN_400)
             
             # Otwórz folder z plikiem
             os.startfile(os.path.dirname(abs_path))
+        elif pdf_success:
+            self.show_snackbar("PDF wygenerowany, błąd DOCX!", ft.Colors.ORANGE_400)
+        elif docx_success:
+            self.show_snackbar("DOCX wygenerowany, błąd PDF!", ft.Colors.ORANGE_400)
         else:
-            self.show_snackbar("Błąd generowania PDF!", ft.Colors.RED_400)
+            self.show_snackbar("Błąd generowania oferty!", ft.Colors.RED_400)
     
     # === POMOCNICZE ===
     
