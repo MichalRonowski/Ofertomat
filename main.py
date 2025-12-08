@@ -745,7 +745,8 @@ class OfertomatApp:
     def update_margin(self, index, value):
         """Aktualizuje marżę w ofercie"""
         try:
-            margin = float(value)
+            # Zamień przecinek na kropkę dla poprawnego parsowania
+            margin = float(value.replace(',', '.'))
             self.offer_items[index]['margin'] = margin
             self.refresh_offer_table()
         except ValueError:
@@ -754,7 +755,8 @@ class OfertomatApp:
     def update_net_price(self, index, value):
         """Aktualizuje cenę netto i przelicza marżę"""
         try:
-            net_price = float(value)
+            # Zamień przecinek na kropkę dla poprawnego parsowania
+            net_price = float(value.replace(',', '.'))
             item = self.offer_items[index]
             
             # Przelicz marżę na podstawie nowej ceny netto
@@ -770,7 +772,8 @@ class OfertomatApp:
     def update_gross_price(self, index, value):
         """Aktualizuje cenę brutto i przelicza cenę netto oraz marżę"""
         try:
-            gross_price = float(value)
+            # Zamień przecinek na kropkę dla poprawnego parsowania
+            gross_price = float(value.replace(',', '.'))
             item = self.offer_items[index]
             
             # Przelicz cenę netto z brutto
