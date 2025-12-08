@@ -16,11 +16,16 @@ class PDFGenerator:
     def __init__(self):
         self.styles = getSampleStyleSheet()
         
+        # Użyj standardowych czcionek - Helvetica obsługuje polskie znaki w PDF
+        self.font_name = 'Helvetica'
+        self.font_bold = 'Helvetica-Bold'
+        
         # Dodaj niestandardowe style
         self.styles.add(ParagraphStyle(
             name='CustomTitle',
             parent=self.styles['Heading1'],
             fontSize=24,
+            fontName=self.font_bold,
             textColor=colors.HexColor('#1a5490'),
             spaceAfter=30,
             alignment=TA_CENTER
@@ -30,10 +35,19 @@ class PDFGenerator:
             name='CategoryHeader',
             parent=self.styles['Heading2'],
             fontSize=14,
+            fontName=self.font_bold,
             textColor=colors.HexColor('#2c5aa0'),
             spaceAfter=10,
             spaceBefore=20,
             leftIndent=0
+        ))
+        
+        self.styles.add(ParagraphStyle(
+            name='TableText',
+            parent=self.styles['Normal'],
+            fontSize=8,
+            fontName=self.font_name,
+            leading=10
         ))
     
     def calculate_price(self, purchase_price: float, margin: float, vat_rate: float, quantity: float = 1):
@@ -145,8 +159,11 @@ class PDFGenerator:
                     category_total_net += prices['net_total']
                     category_total_gross += prices['gross_total']
                     
+                    # Użyj Paragraph dla nazwy aby obsługiwać długie teksty
+                    name_para = Paragraph(item['name'], self.styles['TableText'])
+                    
                     table_data.append([
-                        item['name'],
+                        name_para,
                         f"{item['quantity']:.2f}",
                         item.get('unit', 'szt.'),
                         f"{prices['net_unit']:.2f} zł",
@@ -166,8 +183,9 @@ class PDFGenerator:
                 grand_total_net += category_total_net
                 grand_total_gross += category_total_gross
                 
-                # Stwórz tabelę
-                table = Table(table_data, colWidths=[6*cm, 1.5*cm, 1*cm, 2*cm, 1.2*cm, 2*cm, 2*cm, 2*cm])
+                # Stwórz tabelę - dostosowane szerokości kolumn
+                # Szersza kolumna Nazwa, węższe pozostałe
+                table = Table(table_data, colWidths=[7*cm, 1.2*cm, 1*cm, 2*cm, 1*cm, 2*cm, 2*cm, 2*cm])
                 
                 # Stylizacja tabeli
                 table.setStyle(TableStyle([
@@ -175,12 +193,12 @@ class PDFGenerator:
                     ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2c5aa0')),
                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                     ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
-                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTNAME', (0, 0), (-1, 0), self.font_bold),
                     ('FONTSIZE', (0, 0), (-1, 0), 9),
                     ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
                     
                     # Dane
-                    ('FONTNAME', (0, 1), (-1, -2), 'Helvetica'),
+                    ('FONTNAME', (0, 1), (-1, -2), self.font_name),
                     ('FONTSIZE', (0, 1), (-1, -2), 8),
                     ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),
                     ('ALIGN', (0, 1), (0, -1), 'LEFT'),
@@ -192,7 +210,7 @@ class PDFGenerator:
                     
                     # Podsuma kategorii
                     ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#e6f2ff')),
-                    ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+                    ('FONTNAME', (0, -1), (-1, -1), self.font_bold),
                     ('FONTSIZE', (0, -1), (-1, -1), 9),
                     
                     # Padding
@@ -212,7 +230,7 @@ class PDFGenerator:
             
             summary_table = Table(summary_data, colWidths=[14*cm, 4*cm])
             summary_table.setStyle(TableStyle([
-                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+                ('FONTNAME', (0, 0), (-1, -1), self.font_bold),
                 ('FONTSIZE', (0, 0), (-1, -1), 12),
                 ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
                 ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
