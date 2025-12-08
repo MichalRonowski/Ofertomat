@@ -18,8 +18,10 @@ class OfertomatApp:
         # Konfiguracja strony
         self.page.title = "Ofertomat"
         self.page.theme_mode = ft.ThemeMode.LIGHT
-        self.page.window_width = 1200
-        self.page.window_height = 800
+        self.page.window_width = 1600
+        self.page.window_height = 900
+        self.page.window_min_width = 1400
+        self.page.window_min_height = 800
         
         # Nawigacja
         self.rail = ft.NavigationRail(
