@@ -151,16 +151,21 @@ class OfertomatApp:
         margin_field = ft.TextField(label="Domyślna marża (%)", value="30", keyboard_type=ft.KeyboardType.NUMBER)
         
         def save_category(e):
-            if name_field.value and margin_field.value:
-                success = self.db.add_category(name_field.value, float(margin_field.value))
-                if success:
-                    self.page.dialog.open = False
-                    self.page.update()
-                    self.show_categories_view()
-                else:
-                    self.show_snackbar("Kategoria o tej nazwie już istnieje!", ft.Colors.RED_400)
+            try:
+                if name_field.value and margin_field.value:
+                    success = self.db.add_category(name_field.value, float(margin_field.value))
+                    if success:
+                        self.close_dialog()
+                        self.show_categories_view()
+                        self.show_snackbar(f"Kategoria '{name_field.value}' dodana!", ft.Colors.GREEN_400)
+                    else:
+                        self.show_snackbar("Kategoria o tej nazwie już istnieje!", ft.Colors.RED_400)
+            except Exception as ex:
+                print(f"Błąd dodawania kategorii: {ex}")
+                self.show_snackbar(f"Błąd: {str(ex)}", ft.Colors.RED_400)
         
         dialog = ft.AlertDialog(
+            modal=True,
             title=ft.Text("Dodaj kategorię"),
             content=ft.Column([name_field, margin_field], tight=True, height=150),
             actions=[
@@ -179,16 +184,21 @@ class OfertomatApp:
         margin_field = ft.TextField(label="Domyślna marża (%)", value=str(category['default_margin']), keyboard_type=ft.KeyboardType.NUMBER)
         
         def save_category(e):
-            if name_field.value and margin_field.value:
-                success = self.db.update_category(category['id'], name_field.value, float(margin_field.value))
-                if success:
-                    self.page.dialog.open = False
-                    self.page.update()
-                    self.show_categories_view()
-                else:
-                    self.show_snackbar("Kategoria o tej nazwie już istnieje!", ft.Colors.RED_400)
+            try:
+                if name_field.value and margin_field.value:
+                    success = self.db.update_category(category['id'], name_field.value, float(margin_field.value))
+                    if success:
+                        self.close_dialog()
+                        self.show_categories_view()
+                        self.show_snackbar(f"Kategoria '{name_field.value}' zaktualizowana!", ft.Colors.GREEN_400)
+                    else:
+                        self.show_snackbar("Kategoria o tej nazwie już istnieje!", ft.Colors.RED_400)
+            except Exception as ex:
+                print(f"Błąd edycji kategorii: {ex}")
+                self.show_snackbar(f"Błąd: {str(ex)}", ft.Colors.RED_400)
         
         dialog = ft.AlertDialog(
+            modal=True,
             title=ft.Text("Edytuj kategorię"),
             content=ft.Column([name_field, margin_field], tight=True, height=150),
             actions=[
@@ -204,12 +214,17 @@ class OfertomatApp:
     def delete_category(self, category):
         """Dialog usuwania kategorii"""
         def confirm_delete(e):
-            self.db.delete_category(category['id'])
-            self.page.dialog.open = False
-            self.page.update()
-            self.show_categories_view()
+            try:
+                self.db.delete_category(category['id'])
+                self.close_dialog()
+                self.show_categories_view()
+                self.show_snackbar(f"Kategoria '{category['name']}' usunięta!", ft.Colors.GREEN_400)
+            except Exception as ex:
+                print(f"Błąd usuwania kategorii: {ex}")
+                self.show_snackbar(f"Błąd: {str(ex)}", ft.Colors.RED_400)
         
         dialog = ft.AlertDialog(
+            modal=True,
             title=ft.Text("Potwierdzenie"),
             content=ft.Text(f"Czy na pewno chcesz usunąć kategorię '{category['name']}'?"),
             actions=[
