@@ -638,33 +638,51 @@ class OfertomatApp:
             net_price = item['purchase_price_net'] * (1 + item['margin'] / 100)
             gross_price = net_price * (1 + item['vat_rate'] / 100)
             
-            quantity_field = ft.TextField(
-                value=str(item['quantity']),
-                width=80,
-                keyboard_type=ft.KeyboardType.NUMBER,
+            # Pole edycji nazwy
+            name_field = ft.TextField(
+                value=item['name'],
+                width=300,
                 data=i,
-                on_change=lambda e: self.update_quantity(e.control.data, e.control.value)
+                on_blur=lambda e: self.update_item_name(e.control.data, e.control.value)
             )
             
+            # Pole edycji marży
             margin_field = ft.TextField(
                 value=str(item['margin']),
                 width=80,
                 keyboard_type=ft.KeyboardType.NUMBER,
                 data=i,
-                on_change=lambda e: self.update_margin(e.control.data, e.control.value)
+                on_blur=lambda e: self.update_margin(e.control.data, e.control.value)
+            )
+            
+            # Pole edycji ceny netto
+            net_field = ft.TextField(
+                value=f"{net_price:.2f}",
+                width=100,
+                keyboard_type=ft.KeyboardType.NUMBER,
+                data=i,
+                on_blur=lambda e: self.update_net_price(e.control.data, e.control.value)
+            )
+            
+            # Pole edycji ceny brutto
+            gross_field = ft.TextField(
+                value=f"{gross_price:.2f}",
+                width=100,
+                keyboard_type=ft.KeyboardType.NUMBER,
+                data=i,
+                on_blur=lambda e: self.update_gross_price(e.control.data, e.control.value)
             )
             
             rows.append(
                 ft.DataRow(
                     cells=[
-                        ft.DataCell(ft.Text(item['category_name'])),
-                        ft.DataCell(ft.Text(item['name'])),
-                        ft.DataCell(quantity_field),
-                        ft.DataCell(ft.Text(item['unit'])),
+                        ft.DataCell(ft.Text(item['category_name'], width=100)),
+                        ft.DataCell(name_field),
+                        ft.DataCell(ft.Text(f"{item['purchase_price_net']:.2f} zł", width=80)),
                         ft.DataCell(margin_field),
-                        ft.DataCell(ft.Text(f"{net_price:.2f} zł")),
-                        ft.DataCell(ft.Text(f"{item['vat_rate']:.0f}%")),
-                        ft.DataCell(ft.Text(f"{gross_price:.2f} zł")),
+                        ft.DataCell(ft.Text(f"{item['vat_rate']:.0f}%", width=50)),
+                        ft.DataCell(net_field),
+                        ft.DataCell(gross_field),
                         ft.DataCell(
                             ft.IconButton(
                                 icon="delete",
@@ -682,11 +700,10 @@ class OfertomatApp:
             columns=[
                 ft.DataColumn(ft.Text("Kategoria")),
                 ft.DataColumn(ft.Text("Produkt")),
-                ft.DataColumn(ft.Text("Ilość")),
-                ft.DataColumn(ft.Text("J.m.")),
+                ft.DataColumn(ft.Text("Cena zakupu")),
                 ft.DataColumn(ft.Text("Marża %")),
-                ft.DataColumn(ft.Text("Cena netto jedn.")),
                 ft.DataColumn(ft.Text("VAT")),
+                ft.DataColumn(ft.Text("Cena netto jedn.")),
                 ft.DataColumn(ft.Text("Cena brutto jedn.")),
                 ft.DataColumn(ft.Text("Akcje")),
             ],
@@ -704,21 +721,54 @@ class OfertomatApp:
         ])
         self.page.update()
     
-    def update_quantity(self, index, value):
-        """Aktualizuje ilość w ofercie"""
-        try:
-            self.offer_items[index]['quantity'] = float(value)
-            self.refresh_offer_table()
-        except ValueError:
-            pass
+    def update_item_name(self, index, value):
+        """Aktualizuje nazwę produktu w ofercie"""
+        if value and value.strip():
+            self.offer_items[index]['name'] = value.strip()
     
     def update_margin(self, index, value):
         """Aktualizuje marżę w ofercie"""
         try:
-            self.offer_items[index]['margin'] = float(value)
+            margin = float(value)
+            self.offer_items[index]['margin'] = margin
             self.refresh_offer_table()
         except ValueError:
-            pass
+            self.show_snackbar("Nieprawidłowa wartość marży!", ft.Colors.RED_400)
+    
+    def update_net_price(self, index, value):
+        """Aktualizuje cenę netto i przelicza marżę"""
+        try:
+            net_price = float(value)
+            item = self.offer_items[index]
+            
+            # Przelicz marżę na podstawie nowej ceny netto
+            if item['purchase_price_net'] > 0:
+                new_margin = ((net_price / item['purchase_price_net']) - 1) * 100
+                item['margin'] = round(new_margin, 2)
+                self.refresh_offer_table()
+            else:
+                self.show_snackbar("Cena zakupu nie może być zero!", ft.Colors.RED_400)
+        except ValueError:
+            self.show_snackbar("Nieprawidłowa wartość ceny netto!", ft.Colors.RED_400)
+    
+    def update_gross_price(self, index, value):
+        """Aktualizuje cenę brutto i przelicza cenę netto oraz marżę"""
+        try:
+            gross_price = float(value)
+            item = self.offer_items[index]
+            
+            # Przelicz cenę netto z brutto
+            net_price = gross_price / (1 + item['vat_rate'] / 100)
+            
+            # Przelicz marżę na podstawie nowej ceny netto
+            if item['purchase_price_net'] > 0:
+                new_margin = ((net_price / item['purchase_price_net']) - 1) * 100
+                item['margin'] = round(new_margin, 2)
+                self.refresh_offer_table()
+            else:
+                self.show_snackbar("Cena zakupu nie może być zero!", ft.Colors.RED_400)
+        except ValueError:
+            self.show_snackbar("Nieprawidłowa wartość ceny brutto!", ft.Colors.RED_400)
     
     def remove_offer_item(self, index):
         """Usuwa pozycję z oferty"""
