@@ -16,9 +16,35 @@ class PDFGenerator:
     def __init__(self):
         self.styles = getSampleStyleSheet()
         
-        # Użyj standardowych czcionek - Helvetica obsługuje polskie znaki w PDF
-        self.font_name = 'Helvetica'
-        self.font_bold = 'Helvetica-Bold'
+        # Rejestruj czcionkę obsługującą Unicode (polskie znaki)
+        try:
+            # Pobierz ścieżkę do systemowych czcionek Windows
+            import winreg
+            import pathlib
+            
+            # Znajdź katalog czcionek Windows
+            fonts_dir = os.path.join(os.environ.get('WINDIR', 'C:\\Windows'), 'Fonts')
+            
+            # Użyj Arial Unicode MS lub Arial - obie obsługują polskie znaki
+            arial_path = os.path.join(fonts_dir, 'arial.ttf')
+            arial_bold_path = os.path.join(fonts_dir, 'arialbd.ttf')
+            
+            if os.path.exists(arial_path):
+                pdfmetrics.registerFont(TTFont('ArialUnicode', arial_path))
+                self.font_name = 'ArialUnicode'
+            else:
+                self.font_name = 'Helvetica'
+                
+            if os.path.exists(arial_bold_path):
+                pdfmetrics.registerFont(TTFont('ArialUnicode-Bold', arial_bold_path))
+                self.font_bold = 'ArialUnicode-Bold'
+            else:
+                self.font_bold = 'Helvetica-Bold'
+                
+        except Exception as e:
+            print(f"Nie można załadować czcionki Arial: {e}")
+            self.font_name = 'Helvetica'
+            self.font_bold = 'Helvetica-Bold'
         
         # Dodaj niestandardowe style
         self.styles.add(ParagraphStyle(
