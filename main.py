@@ -146,17 +146,15 @@ class OfertomatApp:
     
     def add_category_dialog(self, e):
         """Dialog dodawania kategorii"""
-        print("DEBUG: add_category_dialog wywołane")
-        
         def close_dlg(e):
             dlg.open = False
             self.page.update()
         
         def save_category(e):
             try:
-                print(f"DEBUG: save_category - name={name_field.value}, margin={margin_field.value}")
                 if name_field.value and margin_field.value:
-                    success = self.db.add_category(name_field.value, float(margin_field.value))
+                    margin = float(margin_field.value)
+                    success = self.db.add_category(name_field.value, margin)
                     if success:
                         dlg.open = False
                         self.page.update()
@@ -164,6 +162,8 @@ class OfertomatApp:
                         self.show_snackbar(f"Kategoria '{name_field.value}' dodana!", ft.Colors.GREEN_400)
                     else:
                         self.show_snackbar("Kategoria o tej nazwie już istnieje!", ft.Colors.RED_400)
+            except ValueError:
+                self.show_snackbar("Nieprawidłowa wartość marży!", ft.Colors.RED_400)
             except Exception as ex:
                 print(f"Błąd dodawania kategorii: {ex}")
                 self.show_snackbar(f"Błąd: {str(ex)}", ft.Colors.RED_400)
@@ -182,16 +182,12 @@ class OfertomatApp:
             actions_alignment=ft.MainAxisAlignment.END,
         )
         
-        self.page.dialog = dlg
+        self.page.overlay.append(dlg)
         dlg.open = True
-        print(f"DEBUG: Dialog ustawiony, open={dlg.open}")
         self.page.update()
-        print("DEBUG: Page zaktualizowane")
     
     def edit_category(self, category):
         """Dialog edycji kategorii"""
-        print(f"DEBUG: edit_category wywołane dla: {category}")
-        
         def close_dlg(e):
             dlg.open = False
             self.page.update()
@@ -199,7 +195,8 @@ class OfertomatApp:
         def save_category(e):
             try:
                 if name_field.value and margin_field.value:
-                    success = self.db.update_category(category['id'], name_field.value, float(margin_field.value))
+                    margin = float(margin_field.value)
+                    success = self.db.update_category(category['id'], name_field.value, margin)
                     if success:
                         dlg.open = False
                         self.page.update()
@@ -207,6 +204,8 @@ class OfertomatApp:
                         self.show_snackbar(f"Kategoria '{name_field.value}' zaktualizowana!", ft.Colors.GREEN_400)
                     else:
                         self.show_snackbar("Kategoria o tej nazwie już istnieje!", ft.Colors.RED_400)
+            except ValueError:
+                self.show_snackbar("Nieprawidłowa wartość marży!", ft.Colors.RED_400)
             except Exception as ex:
                 print(f"Błąd edycji kategorii: {ex}")
                 self.show_snackbar(f"Błąd: {str(ex)}", ft.Colors.RED_400)
@@ -225,14 +224,12 @@ class OfertomatApp:
             actions_alignment=ft.MainAxisAlignment.END,
         )
         
-        self.page.dialog = dlg
+        self.page.overlay.append(dlg)
         dlg.open = True
         self.page.update()
     
     def delete_category(self, category):
         """Dialog usuwania kategorii"""
-        print(f"DEBUG: delete_category wywołane dla: {category}")
-        
         def close_dlg(e):
             dlg.open = False
             self.page.update()
@@ -259,7 +256,7 @@ class OfertomatApp:
             actions_alignment=ft.MainAxisAlignment.END,
         )
         
-        self.page.dialog = dlg
+        self.page.overlay.append(dlg)
         dlg.open = True
         self.page.update()
     
@@ -372,23 +369,33 @@ class OfertomatApp:
         vat_field = ft.TextField(label="Stawka VAT (%)", value="23", keyboard_type=ft.KeyboardType.NUMBER)
         category_dropdown = ft.Dropdown(label="Kategoria", options=category_options)
         
+        def close_dlg(e):
+            dialog.open = False
+            self.page.update()
+        
         def save_product(e):
             if code_field.value and name_field.value:
-                cat_id = int(category_dropdown.value) if category_dropdown.value else None
-                success = self.db.add_product(
-                    code_field.value,
-                    name_field.value,
-                    unit_field.value,
-                    float(price_field.value),
-                    float(vat_field.value),
-                    cat_id
-                )
-                if success:
-                    self.page.dialog.open = False
-                    self.page.update()
-                    self.show_products_view()
-                else:
-                    self.show_snackbar("Produkt o tym kodzie już istnieje!", ft.Colors.RED_400)
+                try:
+                    cat_id = int(category_dropdown.value) if category_dropdown.value else None
+                    price = float(price_field.value)
+                    vat = float(vat_field.value)
+                    
+                    success = self.db.add_product(
+                        code_field.value,
+                        name_field.value,
+                        unit_field.value,
+                        price,
+                        vat,
+                        cat_id
+                    )
+                    if success:
+                        dialog.open = False
+                        self.page.update()
+                        self.show_products_view()
+                    else:
+                        self.show_snackbar("Produkt o tym kodzie już istnieje!", ft.Colors.RED_400)
+                except ValueError:
+                    self.show_snackbar("Nieprawidłowe wartości w polach liczbowych!", ft.Colors.RED_400)
         
         dialog = ft.AlertDialog(
             title=ft.Text("Dodaj produkt"),
@@ -396,12 +403,12 @@ class OfertomatApp:
                 code_field, name_field, unit_field, price_field, vat_field, category_dropdown
             ], tight=True, height=400),
             actions=[
-                ft.TextButton("Anuluj", on_click=lambda e: self.close_dialog()),
+                ft.TextButton("Anuluj", on_click=close_dlg),
                 ft.FilledButton("Zapisz", on_click=save_product),
             ],
         )
         
-        self.page.dialog = dialog
+        self.page.overlay.append(dialog)
         dialog.open = True
         self.page.update()
     
@@ -421,24 +428,34 @@ class OfertomatApp:
             value=str(product['category_id']) if product['category_id'] else None
         )
         
+        def close_dlg(e):
+            dialog.open = False
+            self.page.update()
+        
         def save_product(e):
             if code_field.value and name_field.value:
-                cat_id = int(category_dropdown.value) if category_dropdown.value else None
-                success = self.db.update_product(
-                    product['id'],
-                    code_field.value,
-                    name_field.value,
-                    unit_field.value,
-                    float(price_field.value),
-                    float(vat_field.value),
-                    cat_id
-                )
-                if success:
-                    self.page.dialog.open = False
-                    self.page.update()
-                    self.show_products_view()
-                else:
-                    self.show_snackbar("Produkt o tym kodzie już istnieje!", ft.Colors.RED_400)
+                try:
+                    cat_id = int(category_dropdown.value) if category_dropdown.value else None
+                    price = float(price_field.value)
+                    vat = float(vat_field.value)
+                    
+                    success = self.db.update_product(
+                        product['id'],
+                        code_field.value,
+                        name_field.value,
+                        unit_field.value,
+                        price,
+                        vat,
+                        cat_id
+                    )
+                    if success:
+                        dialog.open = False
+                        self.page.update()
+                        self.show_products_view()
+                    else:
+                        self.show_snackbar("Produkt o tym kodzie już istnieje!", ft.Colors.RED_400)
+                except ValueError:
+                    self.show_snackbar("Nieprawidłowe wartości w polach liczbowych!", ft.Colors.RED_400)
         
         dialog = ft.AlertDialog(
             title=ft.Text("Edytuj produkt"),
@@ -446,20 +463,24 @@ class OfertomatApp:
                 code_field, name_field, unit_field, price_field, vat_field, category_dropdown
             ], tight=True, height=400),
             actions=[
-                ft.TextButton("Anuluj", on_click=lambda e: self.close_dialog()),
+                ft.TextButton("Anuluj", on_click=close_dlg),
                 ft.FilledButton("Zapisz", on_click=save_product),
             ],
         )
         
-        self.page.dialog = dialog
+        self.page.overlay.append(dialog)
         dialog.open = True
         self.page.update()
     
     def delete_product(self, product):
         """Dialog usuwania produktu"""
+        def close_dlg(e):
+            dialog.open = False
+            self.page.update()
+        
         def confirm_delete(e):
             self.db.delete_product(product['id'])
-            self.page.dialog.open = False
+            dialog.open = False
             self.page.update()
             self.show_products_view()
         
@@ -467,12 +488,12 @@ class OfertomatApp:
             title=ft.Text("Potwierdzenie"),
             content=ft.Text(f"Czy na pewno chcesz usunąć produkt '{product['name']}'?"),
             actions=[
-                ft.TextButton("Anuluj", on_click=lambda e: self.close_dialog()),
+                ft.TextButton("Anuluj", on_click=close_dlg),
                 ft.FilledButton("Usuń", on_click=confirm_delete, style=ft.ButtonStyle(bgcolor=ft.Colors.RED_400)),
             ],
         )
         
-        self.page.dialog = dialog
+        self.page.overlay.append(dialog)
         dialog.open = True
         self.page.update()
     
@@ -734,11 +755,6 @@ class OfertomatApp:
             self.show_snackbar("Błąd generowania PDF!", ft.Colors.RED_400)
     
     # === POMOCNICZE ===
-    
-    def close_dialog(self):
-        """Zamyka dialog"""
-        self.page.dialog.open = False
-        self.page.update()
     
     def show_snackbar(self, message, color=None):
         """Pokazuje snackbar z wiadomością"""

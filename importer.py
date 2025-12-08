@@ -51,7 +51,14 @@ class DataImporter:
         """
         # Wykryj typ pliku i wczytaj dane
         if file_path.endswith('.csv'):
-            df = pd.read_csv(file_path, encoding='utf-8-sig')
+            # Próbuj najpierw z separatorem średnik
+            try:
+                df = pd.read_csv(file_path, encoding='utf-8-sig', sep=';')
+                # Jeśli mamy tylko jedną kolumnę, spróbuj z przecinkiem
+                if len(df.columns) == 1:
+                    df = pd.read_csv(file_path, encoding='utf-8-sig', sep=',')
+            except:
+                df = pd.read_csv(file_path, encoding='utf-8-sig')
         elif file_path.endswith(('.xlsx', '.xls')):
             df = pd.read_excel(file_path)
         else:
@@ -73,12 +80,16 @@ class DataImporter:
             'JM': 'unit',
             'Ostatni koszt bezpośredni': 'purchase_price_net',
             'Cena zakupu': 'purchase_price_net',
+            'Cena zakupu netto': 'purchase_price_net',
             'cena zakupu': 'purchase_price_net',
+            'cena zakupu netto': 'purchase_price_net',
             'Koszt': 'purchase_price_net',
             'Tow. grupa księgowa VAT': 'vat_rate',
             'VAT': 'vat_rate',
+            'Vat': 'vat_rate',
             'vat': 'vat_rate',
-            'Stawka VAT': 'vat_rate'
+            'Stawka VAT': 'vat_rate',
+            'stawka vat': 'vat_rate'
         }
         
         # Znajdź i zmapuj kolumny

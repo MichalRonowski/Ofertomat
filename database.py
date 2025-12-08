@@ -1,4 +1,5 @@
 import sqlite3
+import time
 from datetime import datetime
 from typing import List, Dict, Optional, Tuple
 
@@ -9,7 +10,7 @@ class Database:
     
     def get_connection(self):
         """Tworzy połączenie z bazą danych"""
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, timeout=10.0)
         conn.row_factory = sqlite3.Row
         return conn
     
@@ -55,55 +56,80 @@ class Database:
     
     def add_category(self, name: str, default_margin: float) -> bool:
         """Dodaje nową kategorię"""
+        conn = None
         try:
             conn = self.get_connection()
             cursor = conn.cursor()
             cursor.execute('INSERT INTO Categories (name, default_margin) VALUES (?, ?)', 
                          (name, default_margin))
             conn.commit()
-            conn.close()
             return True
         except sqlite3.IntegrityError:
             return False
+        finally:
+            if conn:
+                conn.close()
     
     def get_categories(self) -> List[Dict]:
         """Pobiera wszystkie kategorie"""
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM Categories ORDER BY name')
-        categories = [dict(row) for row in cursor.fetchall()]
-        conn.close()
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM Categories ORDER BY name')
+            categories = [dict(row) for row in cursor.fetchall()]
         return categories
     
     def update_category(self, category_id: int, name: str, default_margin: float) -> bool:
         """Aktualizuje kategorię"""
+        conn = None
+        retries = 3
+        for attempt in range(retries):
+            try:
+                conn = self.get_connection()
+                cursor = conn.cursor()
+                cursor.execute('UPDATE Categories SET name = ?, default_margin = ? WHERE id = ?',
+                             (name, default_margin, category_id))
+                conn.commit()
+                return True
+            except sqlite3.IntegrityError:
+                return False
+            except sqlite3.OperationalError as e:
+                if "locked" in str(e) and attempt < retries - 1:
+                    time.sleep(0.1)
+                    continue
+                raise
+            finally:
+                if conn:
+                    conn.close()
+        return False
+    
+    def delete_category(self, category_id: int) -> bool:
+        """Usuwa kategorię - tylko jeśli nie ma przypisanych produktów"""
+        conn = None
         try:
             conn = self.get_connection()
             cursor = conn.cursor()
-            cursor.execute('UPDATE Categories SET name = ?, default_margin = ? WHERE id = ?',
-                         (name, default_margin, category_id))
+            
+            # Sprawdź czy kategoria ma produkty
+            cursor.execute('SELECT COUNT(*) as count FROM Products WHERE category_id = ?', (category_id,))
+            count = cursor.fetchone()['count']
+            
+            if count > 0:
+                return False  # Nie można usunąć kategorii z produktami
+            
+            # Usuń kategorię
+            cursor.execute('DELETE FROM Categories WHERE id = ?', (category_id,))
             conn.commit()
-            conn.close()
             return True
-        except sqlite3.IntegrityError:
-            return False
-    
-    def delete_category(self, category_id: int) -> bool:
-        """Usuwa kategorię (produkty przypisane do niej zostaną bez kategorii)"""
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute('UPDATE Products SET category_id = NULL WHERE category_id = ?', 
-                     (category_id,))
-        cursor.execute('DELETE FROM Categories WHERE id = ?', (category_id,))
-        conn.commit()
-        conn.close()
-        return True
+        finally:
+            if conn:
+                conn.close()
     
     # === PRODUKTY ===
     
     def add_product(self, code: str, name: str, unit: str, purchase_price_net: float, 
                    vat_rate: float, category_id: Optional[int] = None) -> bool:
         """Dodaje nowy produkt"""
+        conn = None
         try:
             conn = self.get_connection()
             cursor = conn.cursor()
@@ -113,21 +139,33 @@ class Database:
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (code, name, unit, purchase_price_net, now, vat_rate, category_id))
             conn.commit()
-            conn.close()
             return True
         except sqlite3.IntegrityError:
             return False
+        finally:
+            if conn:
+                conn.close()
     
     def update_product(self, product_id: int, code: str, name: str, unit: str, 
                       purchase_price_net: float, vat_rate: float, category_id: Optional[int]) -> bool:
         """Aktualizuje produkt"""
+        conn = None
         try:
             conn = self.get_connection()
             cursor = conn.cursor()
             
+            # Sprawdź czy kod nie jest używany przez inny produkt
+            cursor.execute('SELECT id FROM Products WHERE code = ? AND id != ?', (code, product_id))
+            if cursor.fetchone():
+                return False  # Kod już używany przez inny produkt
+            
             # Pobierz starą cenę
             cursor.execute('SELECT purchase_price_net FROM Products WHERE id = ?', (product_id,))
-            old_price = cursor.fetchone()['purchase_price_net']
+            old_price_row = cursor.fetchone()
+            if not old_price_row:
+                return False  # Produkt nie istnieje
+            
+            old_price = old_price_row['purchase_price_net']
             
             # Jeśli cena się zmieniła, zaktualizuj datę
             if abs(old_price - purchase_price_net) > 0.001:
@@ -143,19 +181,25 @@ class Database:
                 ''', (code, name, unit, purchase_price_net, vat_rate, category_id, product_id))
             
             conn.commit()
-            conn.close()
             return True
         except sqlite3.IntegrityError:
             return False
+        finally:
+            if conn:
+                conn.close()
     
     def delete_product(self, product_id: int) -> bool:
         """Usuwa produkt"""
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        cursor.execute('DELETE FROM Products WHERE id = ?', (product_id,))
-        conn.commit()
-        conn.close()
-        return True
+        conn = None
+        try:
+            conn = self.get_connection()
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM Products WHERE id = ?', (product_id,))
+            conn.commit()
+            return True
+        finally:
+            if conn:
+                conn.close()
     
     def get_products(self, category_id: Optional[int] = None) -> List[Dict]:
         """Pobiera produkty (opcjonalnie filtrowane po kategorii)"""
