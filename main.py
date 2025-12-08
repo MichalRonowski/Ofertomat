@@ -708,24 +708,31 @@ class OfertomatApp:
                 ft.DataColumn(ft.Text("Kategoria")),
                 ft.DataColumn(ft.Text("Produkt")),
                 ft.DataColumn(ft.Text("Cena zakupu")),
-                ft.DataColumn(ft.Text("Marża %")),
-                ft.DataColumn(ft.Text("VAT")),
-                ft.DataColumn(ft.Text("Cena netto jedn.")),
-                ft.DataColumn(ft.Text("Cena brutto jedn.")),
+                ft.DataColumn(ft.Text("Marża %"), numeric=True),
+                ft.DataColumn(ft.Text("VAT"), numeric=True),
+                ft.DataColumn(ft.Text("Cena netto jedn."), numeric=True),
+                ft.DataColumn(ft.Text("Cena brutto jedn."), numeric=True),
                 ft.DataColumn(ft.Text("Akcje")),
             ],
             rows=rows,
+            column_spacing=20,
+            horizontal_margin=10,
+            heading_row_height=50,
+            data_row_max_height=80,
         )
         
         self.offer_table_container.content = ft.Column([
-            table,
+            ft.Container(
+                content=ft.Row([table], scroll=ft.ScrollMode.AUTO),
+                padding=10,
+            ),
             ft.Divider(),
             ft.FilledButton(
                 "Generuj PDF",
                 icon="picture_as_pdf",
                 on_click=self.generate_offer_pdf
             ) if len(self.offer_items) > 0 else ft.Container(),
-        ])
+        ], scroll=ft.ScrollMode.AUTO)
         self.page.update()
     
     def update_item_name(self, index, value):
