@@ -147,15 +147,19 @@ class OfertomatApp:
     def add_category_dialog(self, e):
         """Dialog dodawania kategorii"""
         print("DEBUG: add_category_dialog wywołane")
-        name_field = ft.TextField(label="Nazwa kategorii", autofocus=True)
-        margin_field = ft.TextField(label="Domyślna marża (%)", value="30", keyboard_type=ft.KeyboardType.NUMBER)
+        
+        def close_dlg(e):
+            dlg.open = False
+            self.page.update()
         
         def save_category(e):
             try:
+                print(f"DEBUG: save_category - name={name_field.value}, margin={margin_field.value}")
                 if name_field.value and margin_field.value:
                     success = self.db.add_category(name_field.value, float(margin_field.value))
                     if success:
-                        self.close_dialog()
+                        dlg.open = False
+                        self.page.update()
                         self.show_categories_view()
                         self.show_snackbar(f"Kategoria '{name_field.value}' dodana!", ft.Colors.GREEN_400)
                     else:
@@ -164,32 +168,41 @@ class OfertomatApp:
                 print(f"Błąd dodawania kategorii: {ex}")
                 self.show_snackbar(f"Błąd: {str(ex)}", ft.Colors.RED_400)
         
-        dialog = ft.AlertDialog(
+        name_field = ft.TextField(label="Nazwa kategorii", autofocus=True)
+        margin_field = ft.TextField(label="Domyślna marża (%)", value="30", keyboard_type=ft.KeyboardType.NUMBER)
+        
+        dlg = ft.AlertDialog(
             modal=True,
             title=ft.Text("Dodaj kategorię"),
             content=ft.Column([name_field, margin_field], tight=True, height=150),
             actions=[
-                ft.TextButton("Anuluj", on_click=lambda e: self.close_dialog()),
+                ft.TextButton("Anuluj", on_click=close_dlg),
                 ft.FilledButton("Zapisz", on_click=save_category),
             ],
+            actions_alignment=ft.MainAxisAlignment.END,
         )
         
-        self.page.dialog = dialog
-        dialog.open = True
+        self.page.dialog = dlg
+        dlg.open = True
+        print(f"DEBUG: Dialog ustawiony, open={dlg.open}")
         self.page.update()
+        print("DEBUG: Page zaktualizowane")
     
     def edit_category(self, category):
         """Dialog edycji kategorii"""
         print(f"DEBUG: edit_category wywołane dla: {category}")
-        name_field = ft.TextField(label="Nazwa kategorii", value=category['name'])
-        margin_field = ft.TextField(label="Domyślna marża (%)", value=str(category['default_margin']), keyboard_type=ft.KeyboardType.NUMBER)
+        
+        def close_dlg(e):
+            dlg.open = False
+            self.page.update()
         
         def save_category(e):
             try:
                 if name_field.value and margin_field.value:
                     success = self.db.update_category(category['id'], name_field.value, float(margin_field.value))
                     if success:
-                        self.close_dialog()
+                        dlg.open = False
+                        self.page.update()
                         self.show_categories_view()
                         self.show_snackbar(f"Kategoria '{name_field.value}' zaktualizowana!", ft.Colors.GREEN_400)
                     else:
@@ -198,45 +211,56 @@ class OfertomatApp:
                 print(f"Błąd edycji kategorii: {ex}")
                 self.show_snackbar(f"Błąd: {str(ex)}", ft.Colors.RED_400)
         
-        dialog = ft.AlertDialog(
+        name_field = ft.TextField(label="Nazwa kategorii", value=category['name'])
+        margin_field = ft.TextField(label="Domyślna marża (%)", value=str(category['default_margin']), keyboard_type=ft.KeyboardType.NUMBER)
+        
+        dlg = ft.AlertDialog(
             modal=True,
             title=ft.Text("Edytuj kategorię"),
             content=ft.Column([name_field, margin_field], tight=True, height=150),
             actions=[
-                ft.TextButton("Anuluj", on_click=lambda e: self.close_dialog()),
+                ft.TextButton("Anuluj", on_click=close_dlg),
                 ft.FilledButton("Zapisz", on_click=save_category),
             ],
+            actions_alignment=ft.MainAxisAlignment.END,
         )
         
-        self.page.dialog = dialog
-        dialog.open = True
+        self.page.dialog = dlg
+        dlg.open = True
         self.page.update()
     
     def delete_category(self, category):
         """Dialog usuwania kategorii"""
         print(f"DEBUG: delete_category wywołane dla: {category}")
+        
+        def close_dlg(e):
+            dlg.open = False
+            self.page.update()
+        
         def confirm_delete(e):
             try:
                 self.db.delete_category(category['id'])
-                self.close_dialog()
+                dlg.open = False
+                self.page.update()
                 self.show_categories_view()
                 self.show_snackbar(f"Kategoria '{category['name']}' usunięta!", ft.Colors.GREEN_400)
             except Exception as ex:
                 print(f"Błąd usuwania kategorii: {ex}")
                 self.show_snackbar(f"Błąd: {str(ex)}", ft.Colors.RED_400)
         
-        dialog = ft.AlertDialog(
+        dlg = ft.AlertDialog(
             modal=True,
             title=ft.Text("Potwierdzenie"),
             content=ft.Text(f"Czy na pewno chcesz usunąć kategorię '{category['name']}'?"),
             actions=[
-                ft.TextButton("Anuluj", on_click=lambda e: self.close_dialog()),
+                ft.TextButton("Anuluj", on_click=close_dlg),
                 ft.FilledButton("Usuń", on_click=confirm_delete, style=ft.ButtonStyle(bgcolor=ft.Colors.RED_400)),
             ],
+            actions_alignment=ft.MainAxisAlignment.END,
         )
         
-        self.page.dialog = dialog
-        dialog.open = True
+        self.page.dialog = dlg
+        dlg.open = True
         self.page.update()
     
     # === PRODUKTY ===
