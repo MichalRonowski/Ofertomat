@@ -641,7 +641,8 @@ class OfertomatApp:
             # Pole edycji nazwy
             name_field = ft.TextField(
                 value=item['name'],
-                width=300,
+                width=400,
+                multiline=False,
                 data=i,
                 on_blur=lambda e: self.update_item_name(e.control.data, e.control.value)
             )
