@@ -87,6 +87,12 @@ class OfertomatApp:
         # Tabela kategorii
         rows = []
         for cat in categories:
+            def make_edit_handler(category):
+                return lambda e: self.edit_category(category)
+            
+            def make_delete_handler(category):
+                return lambda e: self.delete_category(category)
+            
             rows.append(
                 ft.DataRow(
                     cells=[
@@ -97,13 +103,13 @@ class OfertomatApp:
                                 ft.IconButton(
                                     icon="edit",
                                     tooltip="Edytuj",
-                                    on_click=lambda e, c=cat: self.edit_category(c)
+                                    on_click=make_edit_handler(cat)
                                 ),
                                 ft.IconButton(
                                     icon="delete",
                                     tooltip="Usuń",
                                     icon_color=ft.Colors.RED_400,
-                                    on_click=lambda e, c=cat: self.delete_category(c)
+                                    on_click=make_delete_handler(cat)
                                 ),
                             ])
                         ),
@@ -257,6 +263,13 @@ class OfertomatApp:
         rows = []
         for prod in products:
             category_name = prod.get('category_name', 'Brak')
+            
+            def make_edit_handler(product):
+                return lambda e: self.edit_product(product)
+            
+            def make_delete_handler(product):
+                return lambda e: self.delete_product(product)
+            
             rows.append(
                 ft.DataRow(
                     cells=[
@@ -271,13 +284,13 @@ class OfertomatApp:
                                 ft.IconButton(
                                     icon="edit",
                                     tooltip="Edytuj",
-                                    on_click=lambda e, p=prod: self.edit_product(p)
+                                    on_click=make_edit_handler(prod)
                                 ),
                                 ft.IconButton(
                                     icon="delete",
                                     tooltip="Usuń",
                                     icon_color=ft.Colors.RED_400,
-                                    on_click=lambda e, p=prod: self.delete_product(p)
+                                    on_click=make_delete_handler(prod)
                                 ),
                             ])
                         ),
@@ -567,18 +580,28 @@ class OfertomatApp:
             net_price = item['purchase_price_net'] * (1 + item['margin'] / 100)
             gross_price = net_price * (1 + item['vat_rate'] / 100)
             
+            # Funkcje pomocnicze dla handlerów
+            def make_quantity_handler(index):
+                return lambda e: self.update_quantity(index, e.control.value)
+            
+            def make_margin_handler(index):
+                return lambda e: self.update_margin(index, e.control.value)
+            
+            def make_remove_handler(index):
+                return lambda e: self.remove_offer_item(index)
+            
             quantity_field = ft.TextField(
                 value=str(item['quantity']),
                 width=80,
                 keyboard_type=ft.KeyboardType.NUMBER,
-                on_change=lambda e, idx=i: self.update_quantity(idx, e.control.value)
+                on_change=make_quantity_handler(i)
             )
             
             margin_field = ft.TextField(
                 value=str(item['margin']),
                 width=80,
                 keyboard_type=ft.KeyboardType.NUMBER,
-                on_change=lambda e, idx=i: self.update_margin(idx, e.control.value)
+                on_change=make_margin_handler(i)
             )
             
             rows.append(
@@ -597,7 +620,7 @@ class OfertomatApp:
                                 icon="delete",
                                 icon_color=ft.Colors.RED_400,
                                 tooltip="Usuń",
-                                on_click=lambda e, idx=i: self.remove_offer_item(idx)
+                                on_click=make_remove_handler(i)
                             )
                         ),
                     ]
