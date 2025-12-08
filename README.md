@@ -28,7 +28,18 @@ pip install -r requirements.txt
 
 ## Uruchomienie
 
+### Metoda 1: Automatyczne uruchomienie (Windows)
+Kliknij dwukrotnie na plik:
+```
+uruchom.bat
+```
+
+### Metoda 2: Ręczne uruchomienie
 ```bash
+# Aktywuj środowisko wirtualne
+venv\Scripts\activate
+
+# Uruchom aplikację
 python main.py
 ```
 
