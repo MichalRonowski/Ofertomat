@@ -87,11 +87,8 @@ class OfertomatApp:
         # Tabela kategorii
         rows = []
         for cat in categories:
-            def make_edit_handler(category):
-                return lambda e: self.edit_category(category)
-            
-            def make_delete_handler(category):
-                return lambda e: self.delete_category(category)
+            # Użyj partial zamiast lambda w pętli
+            from functools import partial
             
             rows.append(
                 ft.DataRow(
@@ -103,13 +100,15 @@ class OfertomatApp:
                                 ft.IconButton(
                                     icon="edit",
                                     tooltip="Edytuj",
-                                    on_click=make_edit_handler(cat)
+                                    data=cat,
+                                    on_click=lambda e: self.edit_category(e.control.data)
                                 ),
                                 ft.IconButton(
                                     icon="delete",
                                     tooltip="Usuń",
                                     icon_color=ft.Colors.RED_400,
-                                    on_click=make_delete_handler(cat)
+                                    data=cat,
+                                    on_click=lambda e: self.delete_category(e.control.data)
                                 ),
                             ])
                         ),
@@ -147,6 +146,7 @@ class OfertomatApp:
     
     def add_category_dialog(self, e):
         """Dialog dodawania kategorii"""
+        print("DEBUG: add_category_dialog wywołane")
         name_field = ft.TextField(label="Nazwa kategorii", autofocus=True)
         margin_field = ft.TextField(label="Domyślna marża (%)", value="30", keyboard_type=ft.KeyboardType.NUMBER)
         
@@ -180,6 +180,7 @@ class OfertomatApp:
     
     def edit_category(self, category):
         """Dialog edycji kategorii"""
+        print(f"DEBUG: edit_category wywołane dla: {category}")
         name_field = ft.TextField(label="Nazwa kategorii", value=category['name'])
         margin_field = ft.TextField(label="Domyślna marża (%)", value=str(category['default_margin']), keyboard_type=ft.KeyboardType.NUMBER)
         
@@ -213,6 +214,7 @@ class OfertomatApp:
     
     def delete_category(self, category):
         """Dialog usuwania kategorii"""
+        print(f"DEBUG: delete_category wywołane dla: {category}")
         def confirm_delete(e):
             try:
                 self.db.delete_category(category['id'])
@@ -279,12 +281,6 @@ class OfertomatApp:
         for prod in products:
             category_name = prod.get('category_name', 'Brak')
             
-            def make_edit_handler(product):
-                return lambda e: self.edit_product(product)
-            
-            def make_delete_handler(product):
-                return lambda e: self.delete_product(product)
-            
             rows.append(
                 ft.DataRow(
                     cells=[
@@ -299,13 +295,15 @@ class OfertomatApp:
                                 ft.IconButton(
                                     icon="edit",
                                     tooltip="Edytuj",
-                                    on_click=make_edit_handler(prod)
+                                    data=prod,
+                                    on_click=lambda e: self.edit_product(e.control.data)
                                 ),
                                 ft.IconButton(
                                     icon="delete",
                                     tooltip="Usuń",
                                     icon_color=ft.Colors.RED_400,
-                                    on_click=make_delete_handler(prod)
+                                    data=prod,
+                                    on_click=lambda e: self.delete_product(e.control.data)
                                 ),
                             ])
                         ),
@@ -595,28 +593,20 @@ class OfertomatApp:
             net_price = item['purchase_price_net'] * (1 + item['margin'] / 100)
             gross_price = net_price * (1 + item['vat_rate'] / 100)
             
-            # Funkcje pomocnicze dla handlerów
-            def make_quantity_handler(index):
-                return lambda e: self.update_quantity(index, e.control.value)
-            
-            def make_margin_handler(index):
-                return lambda e: self.update_margin(index, e.control.value)
-            
-            def make_remove_handler(index):
-                return lambda e: self.remove_offer_item(index)
-            
             quantity_field = ft.TextField(
                 value=str(item['quantity']),
                 width=80,
                 keyboard_type=ft.KeyboardType.NUMBER,
-                on_change=make_quantity_handler(i)
+                data=i,
+                on_change=lambda e: self.update_quantity(e.control.data, e.control.value)
             )
             
             margin_field = ft.TextField(
                 value=str(item['margin']),
                 width=80,
                 keyboard_type=ft.KeyboardType.NUMBER,
-                on_change=make_margin_handler(i)
+                data=i,
+                on_change=lambda e: self.update_margin(e.control.data, e.control.value)
             )
             
             rows.append(
@@ -635,7 +625,8 @@ class OfertomatApp:
                                 icon="delete",
                                 icon_color=ft.Colors.RED_400,
                                 tooltip="Usuń",
-                                on_click=make_remove_handler(i)
+                                data=i,
+                                on_click=lambda e: self.remove_offer_item(e.control.data)
                             )
                         ),
                     ]
