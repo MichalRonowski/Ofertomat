@@ -54,6 +54,14 @@ class Database:
             )
         ''')
         
+        # Migracja: dodaj kolumnę company jeśli nie istnieje
+        try:
+            cursor.execute("SELECT company FROM BusinessCard LIMIT 1")
+        except sqlite3.OperationalError:
+            # Kolumna company nie istnieje, dodaj ją
+            cursor.execute("ALTER TABLE BusinessCard ADD COLUMN company TEXT")
+            print("Dodano kolumnę 'company' do tabeli BusinessCard")
+        
         # Dodaj domyślną kategorię jeśli baza jest pusta
         cursor.execute('SELECT COUNT(*) as count FROM Categories')
         if cursor.fetchone()['count'] == 0:
