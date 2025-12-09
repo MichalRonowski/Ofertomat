@@ -20,9 +20,9 @@ class OfertomatApp:
         # Konfiguracja strony
         self.page.title = "Ofertomat"
         self.page.theme_mode = ft.ThemeMode.LIGHT
-        self.page.window_width = 2100
+        self.page.window_width = 2400
         self.page.window_height = 900
-        self.page.window_min_width = 1900
+        self.page.window_min_width = 2200
         self.page.window_min_height = 800
         
         # Motyw kolorystyczny zgodny z logo Piwowar
@@ -692,7 +692,7 @@ class OfertomatApp:
             # Pole edycji marży
             margin_field = ft.TextField(
                 value=str(item['margin']),
-                width=80,
+                width=100,
                 keyboard_type=ft.KeyboardType.NUMBER,
                 data=i,
                 on_blur=lambda e: self.update_margin(e.control.data, e.control.value)
