@@ -1,0 +1,13 @@
+INSTRUKCJA: Dodanie logo do raportów
+=====================================
+
+1. Zapisz logo firmy jako plik: logo_piwowar.png
+2. Umieść plik w tym samym katalogu co aplikacja (Ofertomat)
+3. Logo zostanie automatycznie dodane do generowanych raportów PDF i DOCX
+
+Format logo:
+- Plik PNG z przezroczystym tłem
+- Zalecany rozmiar: 800x300 pikseli lub proporcjonalny
+- Nazwa pliku: logo_piwowar.png
+
+Jeśli plik logo nie zostanie znaleziony, raporty wygenerują się bez logo.

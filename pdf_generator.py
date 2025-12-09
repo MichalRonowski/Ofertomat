@@ -2,7 +2,7 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak, Image
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
@@ -138,6 +138,17 @@ class PDFGenerator:
             
             # Elementy dokumentu
             elements = []
+            
+            # Logo w nagłówku (jeśli istnieje)
+            logo_path = 'logo_piwowar.png'
+            if os.path.exists(logo_path):
+                try:
+                    logo = Image(logo_path, width=8*cm, height=3*cm, kind='proportional')
+                    logo.hAlign = 'CENTER'
+                    elements.append(logo)
+                    elements.append(Spacer(1, 10))
+                except Exception as e:
+                    print(f"Nie można załadować logo: {e}")
             
             # Tytuł
             title = offer_data.get('title', 'Oferta handlowa')

@@ -83,6 +83,18 @@ class DOCXGenerator:
                 section.left_margin = Cm(2)
                 section.right_margin = Cm(2)
             
+            # Logo w nagłówku (jeśli istnieje)
+            logo_path = 'logo_piwowar.png'
+            if os.path.exists(logo_path):
+                try:
+                    logo_para = doc.add_paragraph()
+                    logo_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    logo_run = logo_para.add_run()
+                    logo_run.add_picture(logo_path, width=Cm(8))
+                    doc.add_paragraph()  # Spacer
+                except Exception as e:
+                    print(f"Nie można załadować logo: {e}")
+            
             # Tytuł
             title = offer_data.get('title', 'Oferta handlowa')
             title_para = doc.add_paragraph()
