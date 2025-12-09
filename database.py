@@ -47,7 +47,6 @@ class Database:
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS BusinessCard (
                 id INTEGER PRIMARY KEY CHECK (id = 1),
-                company TEXT,
                 full_name TEXT,
                 phone TEXT,
                 email TEXT
@@ -55,10 +54,9 @@ class Database:
         ''')
         
         # Migracja: dodaj kolumnę company jeśli nie istnieje
-        try:
-            cursor.execute("SELECT company FROM BusinessCard LIMIT 1")
-        except sqlite3.OperationalError:
-            # Kolumna company nie istnieje, dodaj ją
+        cursor.execute("PRAGMA table_info(BusinessCard)")
+        columns = [row[1] for row in cursor.fetchall()]
+        if 'company' not in columns:
             cursor.execute("ALTER TABLE BusinessCard ADD COLUMN company TEXT")
             print("Dodano kolumnę 'company' do tabeli BusinessCard")
         
