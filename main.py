@@ -678,12 +678,16 @@ class OfertomatApp:
             if not unit_value:  # Jeśli None lub pusty string
                 unit_value = 'szt.'
             
+            print(f"DEBUG refresh_offer_table: Creating unit field for row {i}, value='{unit_value}'")
+            
             unit_field = ft.TextField(
                 value=unit_value,
-                width=80,
+                width=120,  # Zwiększona szerokość
                 data=i,
                 on_blur=lambda e: self.update_item_unit(e.control.data, e.control.value)
             )
+            
+            print(f"DEBUG: unit_field.value = '{unit_field.value}'")
             
             # Pole edycji marży
             margin_field = ft.TextField(
@@ -723,7 +727,12 @@ class OfertomatApp:
                             )
                         ),
                         ft.DataCell(ft.Text(f"{item['purchase_price_net']:.2f} zł")),
-                        ft.DataCell(unit_field),
+                        ft.DataCell(
+                            ft.Container(
+                                content=unit_field,
+                                width=120
+                            )
+                        ),
                         ft.DataCell(margin_field),
                         ft.DataCell(ft.Text(f"{item['vat_rate']:.0f}%")),
                         ft.DataCell(net_field),
