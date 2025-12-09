@@ -47,6 +47,7 @@ class Database:
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS BusinessCard (
                 id INTEGER PRIMARY KEY CHECK (id = 1),
+                company TEXT,
                 full_name TEXT,
                 phone TEXT,
                 email TEXT
@@ -324,15 +325,15 @@ class Database:
             row = cursor.fetchone()
             return dict(row) if row else None
     
-    def save_business_card(self, full_name: str, phone: str, email: str) -> bool:
+    def save_business_card(self, company: str, full_name: str, phone: str, email: str) -> bool:
         """Zapisuje lub aktualizuje wizytówkę użytkownika"""
         try:
             with self.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute('''
-                    INSERT OR REPLACE INTO BusinessCard (id, full_name, phone, email)
-                    VALUES (1, ?, ?, ?)
-                ''', (full_name, phone, email))
+                    INSERT OR REPLACE INTO BusinessCard (id, company, full_name, phone, email)
+                    VALUES (1, ?, ?, ?, ?)
+                ''', (company, full_name, phone, email))
                 conn.commit()
             return True
         except Exception as e:

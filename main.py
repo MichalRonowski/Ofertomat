@@ -857,6 +857,12 @@ class OfertomatApp:
         card = self.db.get_business_card()
         
         # Pola formularza
+        company_field = ft.TextField(
+            label="Firma",
+            value=card['company'] if card and card.get('company') else "",
+            width=400
+        )
+        
         name_field = ft.TextField(
             label="Imię i nazwisko",
             value=card['full_name'] if card else "",
@@ -878,6 +884,7 @@ class OfertomatApp:
         def save_card(e):
             """Zapisuje wizytówkę"""
             success = self.db.save_business_card(
+                company_field.value or "",
                 name_field.value or "",
                 phone_field.value or "",
                 email_field.value or ""
@@ -894,6 +901,7 @@ class OfertomatApp:
             ft.Divider(),
             ft.Text("Dane będą wyświetlane w nagłówku każdego raportu", size=14, color=ft.Colors.GREY_700),
             ft.Container(height=20),
+            company_field,
             name_field,
             phone_field,
             email_field,

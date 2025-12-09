@@ -76,6 +76,36 @@ class PDFGenerator:
             fontName=self.font_name,
             leading=10
         ))
+        
+        self.styles.add(ParagraphStyle(
+            name='CompanyName',
+            parent=self.styles['Normal'],
+            fontSize=14,
+            fontName=self.font_bold,
+            textColor=colors.black,
+            alignment=TA_CENTER,
+            spaceAfter=5
+        ))
+        
+        self.styles.add(ParagraphStyle(
+            name='ContactInfo',
+            parent=self.styles['Normal'],
+            fontSize=10,
+            fontName=self.font_bold,
+            textColor=colors.black,
+            alignment=TA_CENTER,
+            spaceAfter=5
+        ))
+        
+        self.styles.add(ParagraphStyle(
+            name='DateItalic',
+            parent=self.styles['Normal'],
+            fontSize=10,
+            fontName=self.font_name,
+            textColor=colors.black,
+            alignment=TA_CENTER,
+            spaceAfter=20
+        ))
     
     def calculate_price(self, purchase_price: float, margin: float, vat_rate: float, quantity: float = 1):
         """
@@ -167,40 +197,45 @@ class PDFGenerator:
             # Elementy dokumentu
             elements = []
             
-            # Logo w nagłówku (jeśli istnieje)
+            # 1. Logo w nagłówku (jeśli istnieje)
             logo_path = 'logo_piwowar.png'
             if os.path.exists(logo_path):
                 try:
                     logo = Image(logo_path, width=8*cm, height=3*cm, kind='proportional')
                     logo.hAlign = 'CENTER'
                     elements.append(logo)
-                    elements.append(Spacer(1, 10))
+                    elements.append(Spacer(1, 15))
                 except Exception as e:
                     print(f"Nie można załadować logo: {e}")
             
-            # Wizytówka (jeśli podana)
+            # 2. Wizytówka - Firma (pogrubiona, wyśrodkowana)
             business_card = offer_data.get('business_card')
-            if business_card and (business_card.get('full_name') or business_card.get('phone') or business_card.get('email')):
-                card_text = []
-                if business_card.get('full_name'):
-                    card_text.append(business_card['full_name'])
-                if business_card.get('phone'):
-                    card_text.append(f"Tel: {business_card['phone']}")
-                if business_card.get('email'):
-                    card_text.append(f"E-mail: {business_card['email']}")
-                
-                card_para = Paragraph(" | ".join(card_text), self.styles['Normal'])
-                elements.append(card_para)
-                elements.append(Spacer(1, 10))
+            if business_card and business_card.get('company'):
+                company_para = Paragraph(business_card['company'], self.styles['CompanyName'])
+                elements.append(company_para)
             
-            # Tytuł
+            # 3. Wizytówka - reszta danych (pogrubiona, wyśrodkowana)
+            if business_card:
+                contact_parts = []
+                if business_card.get('full_name'):
+                    contact_parts.append(business_card['full_name'])
+                if business_card.get('phone'):
+                    contact_parts.append(f"Tel: {business_card['phone']}")
+                if business_card.get('email'):
+                    contact_parts.append(f"E-mail: {business_card['email']}")
+                
+                if contact_parts:
+                    contact_para = Paragraph(" | ".join(contact_parts), self.styles['ContactInfo'])
+                    elements.append(contact_para)
+            
+            # 4. Data (kursywa, wyśrodkowana)
+            date_str = offer_data.get('date', datetime.now().strftime('%d.%m.%Y'))
+            date_para = Paragraph(f"<i>Data: {date_str}</i>", self.styles['DateItalic'])
+            elements.append(date_para)
+            
+            # 5. Tytuł (np. "Oferta handlowa")
             title = offer_data.get('title', 'Oferta handlowa')
             elements.append(Paragraph(title, self.styles['CustomTitle']))
-            
-            # Data
-            date_str = offer_data.get('date', datetime.now().strftime('%d.%m.%Y'))
-            date_para = Paragraph(f"Data: {date_str}", self.styles['Normal'])
-            elements.append(date_para)
             elements.append(Spacer(1, 20))
             
             # Pogrupuj produkty po kategoriach

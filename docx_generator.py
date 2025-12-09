@@ -110,7 +110,7 @@ class DOCXGenerator:
                 except Exception as e:
                     print(f"Błąd dodawania znaku wodnego: {e}")
             
-            # Logo w nagłówku dokumentu (jeśli istnieje)
+            # 1. Logo w nagłówku dokumentu (jeśli istnieje)
             if os.path.exists(logo_path):
                 try:
                     logo_para = doc.add_paragraph()
@@ -121,23 +121,42 @@ class DOCXGenerator:
                 except Exception as e:
                     print(f"Nie można załadować logo: {e}")
             
-            # Wizytówka (jeśli podana)
+            # 2. Wizytówka - Firma (pogrubiona, wyśrodkowana)
             business_card = offer_data.get('business_card')
-            if business_card and (business_card.get('full_name') or business_card.get('phone') or business_card.get('email')):
-                card_text = []
-                if business_card.get('full_name'):
-                    card_text.append(business_card['full_name'])
-                if business_card.get('phone'):
-                    card_text.append(f"Tel: {business_card['phone']}")
-                if business_card.get('email'):
-                    card_text.append(f"E-mail: {business_card['email']}")
-                
-                card_para = doc.add_paragraph(" | ".join(card_text))
-                card_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                card_para.runs[0].font.size = Pt(10)
-                doc.add_paragraph()  # Spacer
+            if business_card and business_card.get('company'):
+                company_para = doc.add_paragraph()
+                company_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                company_run = company_para.add_run(business_card['company'])
+                company_run.font.size = Pt(14)
+                company_run.font.bold = True
             
-            # Tytuł
+            # 3. Wizytówka - reszta danych (pogrubiona, wyśrodkowana)
+            if business_card:
+                contact_parts = []
+                if business_card.get('full_name'):
+                    contact_parts.append(business_card['full_name'])
+                if business_card.get('phone'):
+                    contact_parts.append(f"Tel: {business_card['phone']}")
+                if business_card.get('email'):
+                    contact_parts.append(f"E-mail: {business_card['email']}")
+                
+                if contact_parts:
+                    contact_para = doc.add_paragraph(" | ".join(contact_parts))
+                    contact_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    contact_run = contact_para.runs[0]
+                    contact_run.font.size = Pt(10)
+                    contact_run.font.bold = True
+            
+            # 4. Data (kursywa, wyśrodkowana)
+            date_str = offer_data.get('date', datetime.now().strftime('%d.%m.%Y'))
+            date_para = doc.add_paragraph(f"Data: {date_str}")
+            date_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            date_para.runs[0].font.size = Pt(10)
+            date_para.runs[0].font.italic = True
+            
+            doc.add_paragraph()  # Spacer
+            
+            # 5. Tytuł (np. "Oferta handlowa")
             title = offer_data.get('title', 'Oferta handlowa')
             title_para = doc.add_paragraph()
             title_run = title_para.add_run(title)
@@ -145,11 +164,6 @@ class DOCXGenerator:
             title_run.font.bold = True
             title_run.font.color.rgb = self.header_color
             title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            
-            # Data
-            date_str = offer_data.get('date', datetime.now().strftime('%d.%m.%Y'))
-            date_para = doc.add_paragraph(f"Data: {date_str}")
-            date_para.runs[0].font.size = Pt(11)
             
             doc.add_paragraph()  # Spacer
             
