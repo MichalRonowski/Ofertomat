@@ -6,6 +6,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
+from reportlab.pdfgen import canvas
 from datetime import datetime
 from typing import List, Dict
 import os
@@ -101,6 +102,33 @@ class PDFGenerator:
             'vat_amount': round(vat_amount, 2),
             'gross_total': round(gross_total, 2)
         }
+    
+    def add_watermark(self, canvas_obj, doc):
+        """Dodaje znak wodny (logo) w tle każdej strony"""
+        logo_path = 'logo_piwowar.png'
+        if os.path.exists(logo_path):
+            try:
+                # Zapisz stan
+                canvas_obj.saveState()
+                
+                # Ustaw przezroczystość
+                canvas_obj.setFillAlpha(0.1)
+                
+                # Wycentruj logo na stronie
+                page_width, page_height = A4
+                logo_width = 15*cm
+                logo_height = 6*cm
+                x = (page_width - logo_width) / 2
+                y = (page_height - logo_height) / 2
+                
+                # Narysuj logo jako znak wodny
+                canvas_obj.drawImage(logo_path, x, y, width=logo_width, height=logo_height, 
+                                    mask='auto', preserveAspectRatio=True)
+                
+                # Przywróć stan
+                canvas_obj.restoreState()
+            except Exception as e:
+                print(f"Błąd dodawania znaku wodnego: {e}")
     
     def generate_offer_pdf(self, offer_data: Dict, output_path: str) -> bool:
         """
@@ -269,8 +297,8 @@ class PDFGenerator:
             validity_text = "<i>Oferta ważna w dniu przedstawienia do momentu zmiany cen rynkowych.</i>"
             elements.append(Paragraph(validity_text, validity_style))
             
-            # Zbuduj PDF
-            doc.build(elements)
+            # Zbuduj PDF ze znakiem wodnym
+            doc.build(elements, onFirstPage=self.add_watermark, onLaterPages=self.add_watermark)
             return True
             
         except Exception as e:

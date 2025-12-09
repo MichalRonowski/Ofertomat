@@ -3,6 +3,7 @@ from docx.shared import Pt, RGBColor, Cm, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
+from docx.enum.section import WD_SECTION
 from datetime import datetime
 from typing import List, Dict
 import os
@@ -83,8 +84,33 @@ class DOCXGenerator:
                 section.left_margin = Cm(2)
                 section.right_margin = Cm(2)
             
-            # Logo w nagłówku (jeśli istnieje)
+            # Dodaj znak wodny w nagłówku
             logo_path = 'logo_piwowar.png'
+            if os.path.exists(logo_path):
+                try:
+                    # Dodaj logo jako znak wodny w nagłówku (będzie na każdej stronie)
+                    section = doc.sections[0]
+                    header = section.header
+                    
+                    # Dodaj obrazek do nagłówka jako znak wodny
+                    header_para = header.paragraphs[0]
+                    header_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    run = header_para.add_run()
+                    
+                    # Dodaj obrazek z przezroczystością (symulacja znaku wodnego)
+                    picture = run.add_picture(logo_path, width=Cm(12))
+                    
+                    # Dodaj efekt przezroczystości przez XML
+                    drawing = picture._inline.graphic.graphicData.pic
+                    blip = drawing.blipFill.blip
+                    alpha = OxmlElement('a:alphaModFix')
+                    alpha.set('amt', '30000')  # 30% nieprzezroczystości
+                    blip.append(alpha)
+                    
+                except Exception as e:
+                    print(f"Błąd dodawania znaku wodnego: {e}")
+            
+            # Logo w nagłówku dokumentu (jeśli istnieje)
             if os.path.exists(logo_path):
                 try:
                     logo_para = doc.add_paragraph()
