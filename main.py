@@ -20,9 +20,9 @@ class OfertomatApp:
         # Konfiguracja strony
         self.page.title = "Ofertomat"
         self.page.theme_mode = ft.ThemeMode.LIGHT
-        self.page.window_width = 2400
+        self.page.window_width = 2600
         self.page.window_height = 900
-        self.page.window_min_width = 2200
+        self.page.window_min_width = 2400
         self.page.window_min_height = 800
         
         # Motyw kolorystyczny zgodny z logo Piwowar
