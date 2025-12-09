@@ -179,6 +179,7 @@ class DOCXGenerator:
             for category_name, items in sorted(items_by_category.items()):
                 # Nagłówek kategorii
                 category_para = doc.add_paragraph(category_name)
+                category_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
                 category_run = category_para.runs[0]
                 category_run.font.size = Pt(14)
                 category_run.font.bold = True
@@ -251,6 +252,7 @@ class DOCXGenerator:
             # Informacja o ważności oferty
             doc.add_paragraph()
             validity_para = doc.add_paragraph()
+            validity_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
             validity_run = validity_para.add_run('Oferta ważna w dniu przedstawienia do momentu zmiany cen rynkowych.')
             validity_run.font.size = Pt(8)
             validity_run.font.italic = True

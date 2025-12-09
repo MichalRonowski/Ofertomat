@@ -66,7 +66,7 @@ class PDFGenerator:
             textColor=colors.HexColor('#C8102E'),
             spaceAfter=10,
             spaceBefore=20,
-            leftIndent=0
+            alignment=TA_CENTER
         ))
         
         self.styles.add(ParagraphStyle(
@@ -327,7 +327,7 @@ class PDFGenerator:
                 fontSize=8,
                 fontName=self.font_name,
                 textColor=colors.grey,
-                alignment=TA_LEFT
+                alignment=TA_CENTER
             )
             validity_text = "<i>Oferta ważna w dniu przedstawienia do momentu zmiany cen rynkowych.</i>"
             elements.append(Paragraph(validity_text, validity_style))
