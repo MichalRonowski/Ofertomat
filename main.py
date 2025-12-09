@@ -638,10 +638,14 @@ class OfertomatApp:
         for cat_id in selected_categories:
             products = self.db.get_products(cat_id)
             for prod in products:
+                # Debug: wypisz unit dla pierwszego produktu
+                if len(self.offer_items) == 0:
+                    print(f"DEBUG: Product unit = '{prod.get('unit')}' for product: {prod['name']}")
+                
                 self.offer_items.append({
                     'product_id': prod['id'],
                     'name': prod['name'],
-                    'unit': prod['unit'],
+                    'unit': prod.get('unit') or 'szt.',  # Obsługa NULL
                     'quantity': 1.0,
                     'purchase_price_net': prod['purchase_price_net'],
                     'vat_rate': prod['vat_rate'],
@@ -670,8 +674,12 @@ class OfertomatApp:
             )
             
             # Pole edycji J.M.
+            unit_value = item.get('unit', 'szt.')
+            if not unit_value:  # Jeśli None lub pusty string
+                unit_value = 'szt.'
+            
             unit_field = ft.TextField(
-                value=item.get('unit', 'szt.'),
+                value=unit_value,
                 width=80,
                 data=i,
                 on_blur=lambda e: self.update_item_unit(e.control.data, e.control.value)
