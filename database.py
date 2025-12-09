@@ -43,6 +43,16 @@ class Database:
             )
         ''')
         
+        # Tabela BusinessCard
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS BusinessCard (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                full_name TEXT,
+                phone TEXT,
+                email TEXT
+            )
+        ''')
+        
         # Dodaj domyślną kategorię jeśli baza jest pusta
         cursor.execute('SELECT COUNT(*) as count FROM Categories')
         if cursor.fetchone()['count'] == 0:
@@ -303,3 +313,28 @@ class Database:
         conn.commit()
         conn.close()
         return added, updated
+    
+    # === WIZYTÓWKA ===
+    
+    def get_business_card(self) -> Optional[Dict]:
+        """Pobiera wizytówkę użytkownika"""
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM BusinessCard WHERE id = 1')
+            row = cursor.fetchone()
+            return dict(row) if row else None
+    
+    def save_business_card(self, full_name: str, phone: str, email: str) -> bool:
+        """Zapisuje lub aktualizuje wizytówkę użytkownika"""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    INSERT OR REPLACE INTO BusinessCard (id, full_name, phone, email)
+                    VALUES (1, ?, ?, ?)
+                ''', (full_name, phone, email))
+                conn.commit()
+            return True
+        except Exception as e:
+            print(f"Błąd zapisywania wizytówki: {e}")
+            return False

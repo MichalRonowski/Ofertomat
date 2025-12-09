@@ -62,6 +62,11 @@ class OfertomatApp:
                     selected_icon="description",
                     label="Nowa Oferta"
                 ),
+                ft.NavigationRailDestination(
+                    icon="badge_outlined",
+                    selected_icon="badge",
+                    label="Wizytówka"
+                ),
             ],
             on_change=self.navigate
         )
@@ -91,6 +96,8 @@ class OfertomatApp:
             self.show_import_view()
         elif e.control.selected_index == 3:
             self.show_offer_view()
+        elif e.control.selected_index == 4:
+            self.show_business_card_view()
     
     # === KATEGORIE ===
     
@@ -816,7 +823,8 @@ class OfertomatApp:
         offer_data = {
             'title': self.offer_title_field.value,
             'date': datetime.now().strftime('%d.%m.%Y'),
-            'items': self.offer_items
+            'items': self.offer_items,
+            'business_card': self.db.get_business_card()
         }
         
         # Generuj nazwę pliku
@@ -840,6 +848,64 @@ class OfertomatApp:
             self.show_snackbar("DOCX wygenerowany, błąd PDF!", ft.Colors.ORANGE_400)
         else:
             self.show_snackbar("Błąd generowania oferty!", ft.Colors.RED_400)
+    
+    # === WIZYTÓWKA ===
+    
+    def show_business_card_view(self):
+        """Wyświetla widok wizytówki użytkownika"""
+        # Pobierz aktualną wizytówkę
+        card = self.db.get_business_card()
+        
+        # Pola formularza
+        name_field = ft.TextField(
+            label="Imię i nazwisko",
+            value=card['full_name'] if card else "",
+            width=400
+        )
+        
+        phone_field = ft.TextField(
+            label="Numer telefonu",
+            value=card['phone'] if card else "",
+            width=400
+        )
+        
+        email_field = ft.TextField(
+            label="Adres e-mail",
+            value=card['email'] if card else "",
+            width=400
+        )
+        
+        def save_card(e):
+            """Zapisuje wizytówkę"""
+            success = self.db.save_business_card(
+                name_field.value or "",
+                phone_field.value or "",
+                email_field.value or ""
+            )
+            
+            if success:
+                self.show_snackbar("Wizytówka zapisana!", ft.Colors.GREEN_400)
+            else:
+                self.show_snackbar("Błąd zapisywania wizytówki!", ft.Colors.RED_400)
+        
+        # Layout
+        self.content.content = ft.Column([
+            ft.Text("Wizytówka", size=32, weight=ft.FontWeight.BOLD),
+            ft.Divider(),
+            ft.Text("Dane będą wyświetlane w nagłówku każdego raportu", size=14, color=ft.Colors.GREY_700),
+            ft.Container(height=20),
+            name_field,
+            phone_field,
+            email_field,
+            ft.Container(height=20),
+            ft.FilledButton(
+                "Zapisz wizytówkę",
+                icon="save",
+                on_click=save_card
+            ),
+        ], scroll=ft.ScrollMode.AUTO)
+        
+        self.page.update()
     
     # === POMOCNICZE ===
     

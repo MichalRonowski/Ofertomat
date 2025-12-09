@@ -150,6 +150,21 @@ class PDFGenerator:
                 except Exception as e:
                     print(f"Nie można załadować logo: {e}")
             
+            # Wizytówka (jeśli podana)
+            business_card = offer_data.get('business_card')
+            if business_card and (business_card.get('full_name') or business_card.get('phone') or business_card.get('email')):
+                card_text = []
+                if business_card.get('full_name'):
+                    card_text.append(business_card['full_name'])
+                if business_card.get('phone'):
+                    card_text.append(f"Tel: {business_card['phone']}")
+                if business_card.get('email'):
+                    card_text.append(f"E-mail: {business_card['email']}")
+                
+                card_para = Paragraph(" | ".join(card_text), self.styles['Normal'])
+                elements.append(card_para)
+                elements.append(Spacer(1, 10))
+            
             # Tytuł
             title = offer_data.get('title', 'Oferta handlowa')
             elements.append(Paragraph(title, self.styles['CustomTitle']))
