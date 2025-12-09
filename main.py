@@ -669,6 +669,14 @@ class OfertomatApp:
                 on_blur=lambda e: self.update_item_name(e.control.data, e.control.value)
             )
             
+            # Pole edycji J.M.
+            unit_field = ft.TextField(
+                value=item.get('unit', 'szt.'),
+                width=80,
+                data=i,
+                on_blur=lambda e: self.update_item_unit(e.control.data, e.control.value)
+            )
+            
             # Pole edycji marży
             margin_field = ft.TextField(
                 value=str(item['margin']),
@@ -707,6 +715,7 @@ class OfertomatApp:
                             )
                         ),
                         ft.DataCell(ft.Text(f"{item['purchase_price_net']:.2f} zł")),
+                        ft.DataCell(unit_field),
                         ft.DataCell(margin_field),
                         ft.DataCell(ft.Text(f"{item['vat_rate']:.0f}%")),
                         ft.DataCell(net_field),
@@ -729,6 +738,7 @@ class OfertomatApp:
                 ft.DataColumn(ft.Text("Kategoria")),
                 ft.DataColumn(ft.Text("Produkt")),
                 ft.DataColumn(ft.Text("Cena zakupu")),
+                ft.DataColumn(ft.Text("J.M.")),
                 ft.DataColumn(ft.Text("Marża %"), numeric=True),
                 ft.DataColumn(ft.Text("VAT"), numeric=True),
                 ft.DataColumn(ft.Text("Cena netto jedn."), numeric=True),
@@ -760,6 +770,11 @@ class OfertomatApp:
         """Aktualizuje nazwę produktu w ofercie"""
         if value and value.strip():
             self.offer_items[index]['name'] = value.strip()
+    
+    def update_item_unit(self, index, value):
+        """Aktualizuje jednostkę miary w ofercie"""
+        if value and value.strip():
+            self.offer_items[index]['unit'] = value.strip()
     
     def update_margin(self, index, value):
         """Aktualizuje marżę w ofercie"""
