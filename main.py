@@ -25,6 +25,16 @@ class OfertomatApp:
         self.page.window_min_width = 1900
         self.page.window_min_height = 800
         
+        # Motyw kolorystyczny zgodny z logo Piwowar
+        self.page.theme = ft.Theme(
+            color_scheme=ft.ColorScheme(
+                primary="#C8102E",  # Czerwony z logo
+                on_primary="#FFFFFF",
+                secondary="#8B8B8B",  # Szary z logo
+                on_secondary="#FFFFFF",
+            )
+        )
+        
         # Nawigacja
         self.rail = ft.NavigationRail(
             selected_index=0,

@@ -52,7 +52,7 @@ class PDFGenerator:
             parent=self.styles['Heading1'],
             fontSize=24,
             fontName=self.font_bold,
-            textColor=colors.HexColor('#1a5490'),
+            textColor=colors.HexColor('#8B8B8B'),
             spaceAfter=30,
             alignment=TA_CENTER
         ))
@@ -62,7 +62,7 @@ class PDFGenerator:
             parent=self.styles['Heading2'],
             fontSize=14,
             fontName=self.font_bold,
-            textColor=colors.HexColor('#2c5aa0'),
+            textColor=colors.HexColor('#C8102E'),
             spaceAfter=10,
             spaceBefore=20,
             leftIndent=0
@@ -216,7 +216,7 @@ class PDFGenerator:
                 # Stylizacja tabeli
                 table.setStyle(TableStyle([
                     # Nagłówek
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2c5aa0')),
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#C8102E')),
                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                     ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
                     ('FONTNAME', (0, 0), (-1, 0), self.font_bold),

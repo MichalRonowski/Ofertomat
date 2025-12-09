@@ -11,8 +11,8 @@ class DOCXGenerator:
     """Klasa do generowania raportów DOCX z ofert"""
     
     def __init__(self):
-        self.primary_color = RGBColor(44, 90, 160)  # #2c5aa0
-        self.header_color = RGBColor(26, 84, 144)   # #1a5490
+        self.primary_color = RGBColor(200, 16, 46)   # #C8102E - czerwony z logo
+        self.header_color = RGBColor(139, 139, 139)  # #8B8B8B - szary z logo
     
     def calculate_price(self, purchase_price: float, margin: float, vat_rate: float, quantity: float = 1):
         """
